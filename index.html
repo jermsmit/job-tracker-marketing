@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A self-hosted job search tracking application. Link resumes, track applications, measure response rates, and run your search like a project — on your own infrastructure." />
+  <title>Job Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --bg-card:   #161b22;
+      --bg-raised: #1c2230;
+      --border:    #30363d;
+      --accent:    #3fb950;
+      --accent-dim:#1a4027;
+      --amber:     #d29922;
+      --red:       #f85149;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --subtle:    #484f58;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius:    8px;
+      --max-w:     1100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.btn-demo {
+      background: var(--accent);
+      color: #0d1117;
+      padding: .4rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+    }
+    .nav-links a.btn-demo:hover { background: #4ac95f; text-decoration: none; }
+
+    /* ── SECTIONS ── */
+    section { padding: 5rem 2rem; }
+    .inner { max-width: var(--max-w); margin: 0 auto; }
+
+    .section-label {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .75rem;
+    }
+    h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; line-height: 1.15; letter-spacing: -.03em; }
+    h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -.025em; line-height: 1.25; }
+    h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: .5rem; }
+    p { color: var(--muted); }
+
+    em { color: var(--accent); font-style: normal; }
+
+    /* ── HERO ── */
+    #hero {
+      padding-top: 6rem;
+      padding-bottom: 4rem;
+      border-bottom: 1px solid var(--border);
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(63,185,80,.12) 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 99px;
+      padding: .3rem .9rem;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    #hero h1 { max-width: 720px; margin-bottom: 1.25rem; }
+    #hero p.lead {
+      font-size: 1.15rem;
+      max-width: 560px;
+      margin-bottom: 2rem;
+      color: var(--muted);
+    }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3.5rem; }
+    .btn-primary {
+      background: var(--accent);
+      color: #0d1117;
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .7rem 1.5rem;
+      border-radius: var(--radius);
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: #4ac95f; text-decoration: none; }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 600;
+      font-size: .95rem;
+      padding: .7rem 1.5rem;
+      border-radius: var(--radius);
+      transition: border-color .2s, color .2s;
+    }
+    .btn-secondary:hover { border-color: var(--muted); text-decoration: none; }
+
+    .hero-screenshot {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .hero-screenshot-bar {
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      padding: .6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .dot-red   { width:12px; height:12px; border-radius:50%; background:#f85149; }
+    .dot-amber { width:12px; height:12px; border-radius:50%; background:#d29922; }
+    .dot-green { width:12px; height:12px; border-radius:50%; background:#3fb950; }
+    .url-bar {
+      flex: 1; margin-left: .75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .25rem .75rem;
+      font-size: .75rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+    }
+    .hero-screenshot img {
+      width: 100%;
+      display: block;
+      max-height: 460px;
+      object-fit: cover;
+      object-position: top;
+    }
+    .hero-screenshot .placeholder-img {
+      width: 100%; height: 360px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--subtle); font-size: .9rem; font-family: var(--font-mono);
+      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-raised) 100%);
+    }
+
+    /* ── PROBLEM ── */
+    #problem { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    #problem h2 { margin-bottom: 1rem; }
+    #problem .lead { margin-bottom: 3rem; max-width: 560px; }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .problem-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+    }
+    .problem-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--subtle);
+      line-height: 1;
+      margin-bottom: .75rem;
+    }
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin-top: 2.5rem;
+      background: var(--bg-raised);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 1rem;
+      color: var(--text);
+      font-style: italic;
+    }
+    blockquote cite { display:block; margin-top:.5rem; font-size:.8rem; color:var(--muted); font-style:normal; }
+
+    /* ── FEATURES ── */
+    #features h2 { margin-bottom: .75rem; }
+    #features .lead { margin-bottom: 3rem; max-width: 500px; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: border-color .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); }
+    .feature-icon {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      background: var(--accent-dim);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    /* ── ROI CHART ── */
+    #insights { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    #insights h2 { margin-bottom: .75rem; }
+    #insights .lead { margin-bottom: 3rem; }
+    .tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+    .tier-card {
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid;
+    }
+    .tier-card.green  { background: rgba(63,185,80,.07);  border-color: rgba(63,185,80,.3); }
+    .tier-card.amber  { background: rgba(210,153,34,.07); border-color: rgba(210,153,34,.3); }
+    .tier-card.red    { background: rgba(248,81,73,.07);  border-color: rgba(248,81,73,.3); }
+    .tier-label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .25rem; }
+    .tier-card.green .tier-label { color: var(--accent); }
+    .tier-card.amber .tier-label { color: var(--amber); }
+    .tier-card.red   .tier-label { color: var(--red); }
+    .tier-threshold  { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: .5rem; }
+    .tier-card.green .tier-threshold { color: var(--accent); }
+    .tier-card.amber .tier-threshold { color: var(--amber); }
+    .tier-card.red   .tier-threshold { color: var(--red); }
+
+    /* ── PROCESS ── */
+    #process h2 { margin-bottom: .75rem; }
+    #process .lead { margin-bottom: 3rem; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      counter-reset: step;
+    }
+    .step { counter-increment: step; position: relative; }
+    .step-num {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: .5rem;
+    }
+
+    /* ── TECH STACK ── */
+    #technology { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    #technology h2 { margin-bottom: .75rem; }
+    #technology .lead { margin-bottom: 3rem; }
+    .stack-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+    .stack-table th {
+      text-align: left;
+      padding: .75rem 1rem;
+      background: var(--bg-raised);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border-bottom: 1px solid var(--border);
+    }
+    .stack-table td {
+      padding: .9rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .stack-table td:first-child { color: var(--muted); width: 160px; }
+    .stack-table td code {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      background: var(--bg-raised);
+      padding: .15rem .4rem;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .props-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 2rem; }
+    @media(max-width:600px){ .props-list { grid-template-columns: 1fr; } }
+    .props-list li {
+      display: flex; gap: .6rem; align-items: flex-start;
+      font-size: .9rem; color: var(--muted);
+    }
+    .props-list li::before { content: '+'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: .05rem; }
+
+    /* ── EARLY ACCESS ── */
+    #early-access {
+      text-align: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(63,185,80,.1) 0%, transparent 70%);
+      border-top: 1px solid var(--border);
+    }
+    #early-access h2 { margin-bottom: 1rem; }
+    #early-access p { max-width: 520px; margin: 0 auto 2rem; }
+    .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:700px){
+      .nav-links .hide-mobile { display: none; }
+      section { padding: 3.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">Job<span>Tracker</span></div>
+    <div class="nav-links">
+      <a href="#features" class="hide-mobile">Features</a>
+      <a href="#insights" class="hide-mobile">Insights</a>
+      <a href="#technology" class="hide-mobile">Technology</a>
+      <a href="https://jobtrack-demo.jermsmit.com" class="btn-demo">Live Demo</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="inner">
+    <div class="hero-badge"><span class="dot"></span> Free Early Access — Now Open</div>
+    <h1>Your job search,<br />run like a <em>project.</em></h1>
+    <p class="lead">A self-hosted web application that manages the full lifecycle of a job search — from application to offer. No spreadsheets. No sync conflicts. No third-party data storage.</p>
+    <div class="hero-cta">
+      <a href="https://jobtrack-demo.jermsmit.com" class="btn-primary">View Live Demo</a>
+      <a href="https://github.com/jermsmit/job-tracker" class="btn-secondary">GitHub →</a>
+    </div>
+    <div class="hero-screenshot">
+      <div class="hero-screenshot-bar">
+        <span class="dot-red"></span>
+        <span class="dot-amber"></span>
+        <span class="dot-green"></span>
+        <span class="url-bar">jobtrack-demo.jermsmit.com</span>
+      </div>
+      <!-- Replace src with your actual dashboard screenshot path -->
+      <img src="docs/screenshots/dashboard.png" alt="Job Tracker dashboard showing pipeline, response rates by source, and follow-up queue" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+      <div class="placeholder-img" style="display:none;">[ dashboard screenshot ]</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="inner">
+    <div class="section-label">The Problem</div>
+    <h2>Spreadsheets are not a job search strategy.</h2>
+    <p class="lead">After a month of applying, most people have three versions of the same spreadsheet, resume files scattered across devices, and no way to answer the simplest question: which resume did I send them?</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-num">01</div>
+        <h3>No version control</h3>
+        <p>Resume_FINAL_v2.docx sitting in a folder you can't reliably sync across your laptop and your phone.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">02</div>
+        <h3>No application history</h3>
+        <p>When a recruiter calls two weeks later, you can't quickly surface what you sent them, when, or what the role actually said.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">03</div>
+        <h3>No follow-up system</h3>
+        <p>Applications go cold because there's no queue surfacing roles that haven't had a reply in seven or more days.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-num">04</div>
+        <h3>No source data</h3>
+        <p>You're applying everywhere without knowing which platforms are actually generating conversations. The gut feeling is almost always wrong.</p>
+      </div>
+    </div>
+    <blockquote>
+      "Most people know their job search is disorganized. The harder question is why they're still managing it in a spreadsheet three weeks in."
+      <cite>— From the project story</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="inner">
+    <div class="section-label">Capabilities</div>
+    <h2>Everything in one place.</h2>
+    <p class="lead">A full application lifecycle manager, built for people who treat their job search like the professional project it is.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Version Control for Every Application</h3>
+        <p>Capture the exact resume and cover letter sent for each role. Never walk into an interview referencing the wrong version of your history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📬</div>
+        <h3>Centralized Collateral</h3>
+        <p>Email correspondence, interview prep notes, post-interview debriefs, and file attachments — all linked directly to the role they belong to.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Pipeline Dashboard</h3>
+        <p>Total applications, response rate, average time to response, and a follow-up queue of roles past seven days without a reply — at a glance.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗂️</div>
+        <h3>Three Views, One Dataset</h3>
+        <p>Table view with aging color-coding, a Kanban board for drag-and-drop pipeline management, and a mobile card view for checking status on the go.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📥</div>
+        <h3>Import Your Existing Tracker</h3>
+        <p>Migrate from your current Excel or CSV tracker with auto column mapping. No manual re-entry. Keeps your history intact from day one.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Self-Hosted &amp; Private</h3>
+        <p>Runs on your own infrastructure. No SaaS, no subscriptions, no third-party ever touching your application history or uploaded documents.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSIGHTS -->
+<section id="insights">
+  <div class="inner">
+    <div class="section-label">Data-Driven Insights</div>
+    <h2>Know where to spend your time.</h2>
+    <p class="lead">The dashboard calculates response rates by source and color-codes them by ROI. When you're applying to 15 roles a week across multiple platforms, this answers the question a spreadsheet never can.</p>
+    <div class="tiers">
+      <div class="tier-card green">
+        <div class="tier-label">Strong ROI</div>
+        <div class="tier-threshold">30%+</div>
+        <p style="font-size:.9rem;">Response rate. Double down here — this platform is working.</p>
+      </div>
+      <div class="tier-card amber">
+        <div class="tier-label">Watch &amp; Evaluate</div>
+        <div class="tier-threshold">15–30%</div>
+        <p style="font-size:.9rem;">Moderate returns. Worth maintaining, not worth prioritizing.</p>
+      </div>
+      <div class="tier-card red">
+        <div class="tier-label">Reconsider</div>
+        <div class="tier-threshold">&lt;15%</div>
+        <p style="font-size:.9rem;">Time cost isn't being returned. Redirect effort elsewhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="inner">
+    <div class="section-label">Setup</div>
+    <h2>Up and running in under an hour.</h2>
+    <p class="lead">A single installer script handles everything on Debian or Ubuntu. Docker Compose works too. No cloud account. No vendor dependencies.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Install</h3>
+        <p>Run the installer on any Debian 12 or Ubuntu 22.04+ server. Node.js, PostgreSQL, nginx, firewall, and systemd service — all handled automatically.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Import</h3>
+        <p>Load your existing Excel or CSV tracker. The importer auto-detects column headers even with a title row. Your history carries over cleanly.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Track</h3>
+        <p>Log applications with their specific resume and cover letter. Move them through the pipeline. Let the dashboard surface what needs attention.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h3>Optimize</h3>
+        <p>Read the source analytics. Stop applying everywhere and focus on the two or three channels that are actually generating conversations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNOLOGY -->
+<section id="technology">
+  <div class="inner">
+    <div class="section-label">Under the Hood</div>
+    <h2>Built on a clean, modern stack.</h2>
+    <p class="lead">No proprietary runtimes. No vendor lock-in. Standard technologies any capable engineer can run, maintain, and extend.</p>
+    <table class="stack-table">
+      <thead>
+        <tr><th>Layer</th><th>Technology</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend</td><td><code>React 18</code> &nbsp; <code>Vite</code> &nbsp; <code>Tailwind CSS</code> &nbsp; <code>Chart.js</code></td></tr>
+        <tr><td>Backend</td><td><code>Node.js 20</code> &nbsp; <code>Express</code></td></tr>
+        <tr><td>Database</td><td><code>PostgreSQL 16</code></td></tr>
+        <tr><td>Auth</td><td><code>JWT + bcrypt</code> &nbsp; <code>httpOnly refresh cookies</code></td></tr>
+        <tr><td>Deploy</td><td><code>systemd + nginx + ufw</code> &nbsp; or &nbsp; <code>Docker Compose</code></td></tr>
+      </tbody>
+    </table>
+    <ul class="props-list">
+      <li>All data stays on servers you control. Nothing leaves your environment.</li>
+      <li>No per-seat fees. Deploy to as many users as your server supports.</li>
+      <li>Automated database backup before every update. Easy rollback.</li>
+      <li>Every API route requires a valid JWT — no public endpoints.</li>
+      <li>Every database row scoped to a user_id — cross-user access impossible.</li>
+      <li>Passwords hashed with bcrypt at cost factor 12.</li>
+      <li>Auth endpoints rate-limited to 20 requests per 15 minutes.</li>
+      <li>Daily automated backups with 30-day retention.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- EARLY ACCESS -->
+<section id="early-access">
+  <div class="inner">
+    <div class="section-label">Early Access</div>
+    <h2>Try it. Share it. Help shape it.</h2>
+    <p>Job Tracker is currently being shared with a small group of job seekers for free. The live demo is loaded with realistic sample data — explore the full interface before installing a single thing.</p>
+    <div class="cta-group">
+      <a href="https://jobtrack-demo.jermsmit.com" class="btn-primary">View Live Demo</a>
+      <a href="https://calendly.com/jermalsmith" class="btn-secondary">Book a Call</a>
+    </div>
+    <p style="margin-top:1.5rem; font-size:.85rem;">
+      Demo credentials: <code style="font-family:var(--font-mono); background:var(--bg-raised); padding:.15rem .5rem; border-radius:4px;">admin</code> / <code style="font-family:var(--font-mono); background:var(--bg-raised); padding:.15rem .5rem; border-radius:4px;">Demo123</code> &nbsp;·&nbsp; Reset nightly.
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  Job Tracker &nbsp;|&nbsp; Built by <a href="https://github.com/jermsmit" target="_blank">Jermal Smith</a> &nbsp;|&nbsp;
+  <a href="https://jobtrack-demo.jermsmit.com" target="_blank">Live Demo</a> &nbsp;|&nbsp;
+  <a href="https://calendly.com/jermalsmith" target="_blank">Book a Call</a>
+</footer>
+
+</body>
+</html>
